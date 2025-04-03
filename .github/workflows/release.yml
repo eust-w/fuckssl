@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.1'
+
+      - name: Get tag
+        id: get_tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          # 设置编译环境变量
+          export CGO_ENABLED=0
+          
+          # 创建输出目录
+          mkdir -p dist
+          
+          # 编译各个平台的二进制文件
+          # Windows AMD64
+          GOOS=windows GOARCH=amd64 go build -ldflags="-X main.Version=${TAG}" -o dist/fuckssl_windows_amd64.exe ./cmd/fuckssl
+          
+          # Linux AMD64
+          GOOS=linux GOARCH=amd64 go build -ldflags="-X main.Version=${TAG}" -o dist/fuckssl_linux_amd64 ./cmd/fuckssl
+          
+          # Linux ARM64
+          GOOS=linux GOARCH=arm64 go build -ldflags="-X main.Version=${TAG}" -o dist/fuckssl_linux_arm64 ./cmd/fuckssl
+          
+          # macOS AMD64
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.Version=${TAG}" -o dist/fuckssl_darwin_amd64 ./cmd/fuckssl
+          
+          # macOS ARM64
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.Version=${TAG}" -o dist/fuckssl_darwin_arm64 ./cmd/fuckssl
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/fuckssl_windows_amd64.exe
+            dist/fuckssl_linux_amd64
+            dist/fuckssl_linux_arm64
+            dist/fuckssl_darwin_amd64
+            dist/fuckssl_darwin_arm64
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

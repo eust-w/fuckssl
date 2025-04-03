@@ -1,0 +1,20 @@
+providers:
+  tencent:
+    type: tencent
+    settings:
+      secret_id: your-secret-id
+      secret_key: your-secret-key
+  aliyun:
+    type: aliyun
+    settings:
+      access_key_id: your-access-key-id
+      access_key_secret: your-access-key-secret
+
+deployers:
+  qiniu:
+    type: qiniu
+    settings:
+      access_key: your-access-key
+      secret_key: your-secret-key
+      bucket: your-bucket
+      domain: your-domain 
